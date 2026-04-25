@@ -287,6 +287,21 @@ export function ChatClient() {
     visible.length > 0 &&
     visible[visible.length - 1].role === "user";
 
+  const STARTERS = [
+    "Help me draft an email to Dean Branch asking for an internship referral.",
+    "I'm a new student. How do I find the Computer Science building?",
+    "What campus resources are available for mental health support?",
+    "What clubs or organizations can I join as a freshman?",
+  ];
+
+  function submitStarter(text: string) {
+    flushSync(() => setInput(text));
+    formRef.current?.requestSubmit();
+  }
+
+  // Only show starters on the initial welcome state (no user messages yet)
+  const showStarters = !isLoading && visible.length === 1 && visible[0].role === "assistant";
+
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       {/* ── Scrollable history ── */}
@@ -350,6 +365,23 @@ export function ChatClient() {
           <div ref={bottomRef} />
         </div>
       </div>
+
+      {/* ── Starter prompts ── */}
+      {showStarters && (
+        <div className="shrink-0 px-4 pb-3">
+          <div className="mx-auto grid w-full max-w-2xl grid-cols-1 gap-2 sm:grid-cols-2">
+            {STARTERS.map((prompt) => (
+              <button
+                key={prompt}
+                onClick={() => submitStarter(prompt)}
+                className="rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3 text-left text-sm text-zinc-300 transition-all duration-200 ease-in-out hover:border-zinc-700 hover:bg-zinc-800 hover:text-zinc-100 active:scale-[0.98]"
+              >
+                {prompt}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ── Input bar ── */}
       <div className="shrink-0 border-t border-zinc-800 bg-[hsl(0_0%_2%)] px-4 pb-6 pt-4">

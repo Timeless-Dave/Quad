@@ -256,7 +256,7 @@ function SignInContent() {
               <div className="border-t border-zinc-900 pt-4 text-center">
                 <button
                   onClick={() => setJudgeMode(true)}
-                  className="text-[11px] text-zinc-700 transition-colors duration-200 hover:text-zinc-500"
+                  className="text-[11px] text-zinc-400 underline underline-offset-4 transition-colors duration-200 hover:text-white cursor-pointer"
                 >
                   Hackathon Judge? Click here.
                 </button>
