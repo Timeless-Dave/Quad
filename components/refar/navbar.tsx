@@ -14,6 +14,9 @@ export function Navbar() {
           <Link href="/assistant" className="transition hover:text-white">
             Assistant
           </Link>
+          <Link href="/profile" className="transition hover:text-white">
+            Profile
+          </Link>
           <span className="rounded-full border border-zinc-700 px-3 py-1 text-xs text-zinc-500">
             .edu only
           </span>

@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react";
 import Image from "next/image";
+import { CalendarDays } from "lucide-react";
+import { toast } from "sonner";
 import type { Professor } from "@/lib/data/professors";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -41,7 +43,19 @@ export function DirectoryClient({ professors }: { professors: Professor[] }) {
             <p className="text-sm text-zinc-300">
               {professor.building}, {professor.officeRoom}
             </p>
-            <Modal
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                onClick={() =>
+                  toast("Calendar integration coming in Phase 2!", {
+                    icon: <CalendarDays className="h-4 w-4" />,
+                  })
+                }
+              >
+                <CalendarDays className="mr-1.5 h-4 w-4" />
+                Book Meeting
+              </Button>
+              <Modal
               open={activeProfessor?.id === professor.id}
               onOpenChange={(open) => setActiveProfessor(open ? professor : null)}
               title={`${professor.building} route`}
@@ -55,6 +69,7 @@ export function DirectoryClient({ professors }: { professors: Professor[] }) {
                 className="h-auto w-full rounded-lg border border-zinc-800"
               />
             </Modal>
+            </div>
           </Card>
         ))}
       </div>
