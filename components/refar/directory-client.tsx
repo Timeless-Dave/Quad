@@ -32,9 +32,14 @@ export function DirectoryClient({ professors }: { professors: Professor[] }) {
         value={query}
         onChange={(event) => setQuery(event.target.value)}
       />
+      {filtered.length === 0 && (
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-950 px-6 py-12 text-center text-sm text-zinc-500">
+          No faculty match &ldquo;{query}&rdquo;.
+        </div>
+      )}
       <div className="grid gap-4 md:grid-cols-2">
         {filtered.map((professor) => (
-          <Card key={professor.id} className="space-y-2">
+          <Card key={professor.id} className="space-y-2 cursor-default">
             <p className="text-lg font-semibold">{professor.fullName}</p>
             <p className="text-sm text-zinc-400">
               {professor.title} · {professor.department}

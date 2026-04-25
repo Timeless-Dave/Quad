@@ -356,7 +356,7 @@ export function ChatClient() {
         <form
           ref={formRef}
           onSubmit={handleSubmit}
-          className="mx-auto flex w-full max-w-2xl items-end gap-3 rounded-2xl border border-zinc-700 bg-zinc-900 px-4 py-3 transition-colors focus-within:border-zinc-500"
+          className="mx-auto flex w-full max-w-2xl items-end gap-3 rounded-2xl border border-zinc-700 bg-zinc-900 px-4 py-3 transition-all duration-200 ease-in-out focus-within:border-zinc-500"
         >
           <textarea
             ref={textareaRef}
@@ -366,7 +366,7 @@ export function ChatClient() {
             placeholder="Ask anything about your campus…"
             disabled={isLoading}
             rows={1}
-            className="flex-1 resize-none bg-transparent text-sm leading-relaxed text-white placeholder-zinc-500 outline-none disabled:opacity-50"
+            className="flex-1 resize-none bg-transparent text-[16px] sm:text-sm leading-relaxed text-white placeholder-zinc-500 outline-none disabled:opacity-50"
             style={{ maxHeight: "200px", overflowY: "auto" }}
           />
           {/* Mic button */}

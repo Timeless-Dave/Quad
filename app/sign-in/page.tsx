@@ -19,9 +19,17 @@ function SignInContent() {
   const errorCode = searchParams.get("error");
   const urlError = errorCode ? ERROR_MESSAGES[errorCode] : null;
 
+  // ── Normal flow state ──────────────────────────────────────────────────────
   const [email, setEmail] = useState("");
   const [otpStatus, setOtpStatus] = useState<"idle" | "loading" | "sent">("idle");
   const [otpError, setOtpError] = useState<string | null>(null);
+
+  // ── Judge bypass state ─────────────────────────────────────────────────────
+  const [judgeMode, setJudgeMode] = useState(false);
+  const [judgeEmail, setJudgeEmail] = useState("");
+  const [judgePassword, setJudgePassword] = useState("");
+  const [judgeStatus, setJudgeStatus] = useState<"idle" | "loading">("idle");
+  const [judgeError, setJudgeError] = useState<string | null>(null);
 
   function signInWithGoogle() {
     const supabase = createClient();
@@ -55,6 +63,26 @@ function SignInContent() {
     }
   }
 
+  async function signInAsJudge(e: React.FormEvent) {
+    e.preventDefault();
+    setJudgeError(null);
+    setJudgeStatus("loading");
+
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInWithPassword({
+      email: judgeEmail,
+      password: judgePassword,
+    });
+
+    if (error) {
+      setJudgeError("Invalid credentials. Please try again.");
+      setJudgeStatus("idle");
+    } else {
+      // Hard navigate so middleware re-reads fresh session cookies
+      window.location.href = "/assistant";
+    }
+  }
+
   const displayError = urlError ?? otpError;
 
   return (
@@ -83,13 +111,74 @@ function SignInContent() {
               </p>
               <button
                 onClick={() => { setOtpStatus("idle"); setEmail(""); }}
-                className="text-xs text-zinc-500 underline underline-offset-2 transition hover:text-zinc-300"
+                className="text-xs text-zinc-500 underline underline-offset-2 transition-colors duration-200 hover:text-zinc-300"
               >
                 Use a different email
               </button>
             </div>
+
+          ) : judgeMode ? (
+            /* ── Judge bypass form ── */
+            <>
+              <div className="space-y-1">
+                <h1 className="font-serif text-2xl">Judge Login</h1>
+                <p className="text-sm text-zinc-500">
+                  Use the credentials provided in the submission notes.
+                </p>
+              </div>
+
+              {judgeError && (
+                <div className="rounded-lg border border-red-900/50 bg-red-950/30 px-4 py-3 text-sm text-red-300">
+                  {judgeError}
+                </div>
+              )}
+
+              <form onSubmit={signInAsJudge} className="space-y-3">
+                <input
+                  type="email"
+                  value={judgeEmail}
+                  onChange={(e) => setJudgeEmail(e.target.value)}
+                  placeholder="judge@example.com"
+                  required
+                  className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-[16px] text-white placeholder-zinc-500 outline-none transition-all duration-200 focus:border-zinc-500 sm:text-sm"
+                />
+                <input
+                  type="password"
+                  value={judgePassword}
+                  onChange={(e) => setJudgePassword(e.target.value)}
+                  placeholder="Password"
+                  required
+                  className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-[16px] text-white placeholder-zinc-500 outline-none transition-all duration-200 focus:border-zinc-500 sm:text-sm"
+                />
+                <button
+                  type="submit"
+                  disabled={judgeStatus === "loading" || !judgeEmail.trim() || !judgePassword.trim()}
+                  className="flex w-full items-center justify-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-medium text-black transition-all duration-200 hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  {judgeStatus === "loading" ? (
+                    <>
+                      <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                      Signing in…
+                    </>
+                  ) : (
+                    "Login as Judge"
+                  )}
+                </button>
+              </form>
+
+              <button
+                onClick={() => { setJudgeMode(false); setJudgeError(null); }}
+                className="w-full text-center text-xs text-zinc-600 underline underline-offset-2 transition-colors duration-200 hover:text-zinc-400"
+              >
+                ← Back to sign in
+              </button>
+            </>
+
           ) : (
-            /* ── Sign-in form ── */
+            /* ── Normal sign-in form ── */
             <>
               <div className="space-y-1">
                 <h1 className="font-serif text-2xl">Sign in to Quad</h1>
@@ -110,7 +199,7 @@ function SignInContent() {
               <div className="space-y-1.5">
                 <button
                   onClick={signInWithGoogle}
-                  className="flex w-full items-center justify-center gap-3 rounded-full bg-white px-6 py-3 text-sm font-medium text-black transition hover:bg-zinc-200"
+                  className="flex w-full items-center justify-center gap-3 rounded-full bg-white px-6 py-3 text-sm font-medium text-black transition-all duration-200 hover:bg-zinc-200"
                 >
                   <svg className="h-4 w-4" viewBox="0 0 24 24">
                     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
@@ -138,12 +227,12 @@ function SignInContent() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@university.edu"
                   required
-                  className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-sm text-white placeholder-zinc-500 outline-none focus:border-zinc-500 transition"
+                  className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-[16px] text-white placeholder-zinc-500 outline-none transition-all duration-200 focus:border-zinc-500 sm:text-sm"
                 />
                 <button
                   type="submit"
                   disabled={otpStatus === "loading" || !email.trim()}
-                  className="flex w-full items-center justify-center gap-2 rounded-full border border-zinc-700 px-6 py-3 text-sm font-medium text-zinc-100 transition hover:bg-zinc-900 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="flex w-full items-center justify-center gap-2 rounded-full border border-zinc-700 px-6 py-3 text-sm font-medium text-zinc-100 transition-all duration-200 hover:bg-zinc-900 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   {otpStatus === "loading" ? (
                     <>
@@ -162,6 +251,16 @@ function SignInContent() {
               <p className="text-center text-xs text-zinc-600">
                 Only .edu accounts are accepted.
               </p>
+
+              {/* Judge bypass — subtle, at the very bottom */}
+              <div className="border-t border-zinc-900 pt-4 text-center">
+                <button
+                  onClick={() => setJudgeMode(true)}
+                  className="text-[11px] text-zinc-700 transition-colors duration-200 hover:text-zinc-500"
+                >
+                  Hackathon Judge? Click here.
+                </button>
+              </div>
             </>
           )}
         </div>
