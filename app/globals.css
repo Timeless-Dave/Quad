@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    min-height: 100dvh;
+  }
+
+  ::selection {
+    background: #000;
+    color: #fff;
+  }
+}
+
+:root {
+  --background: 0 0% 100%;
+  --foreground: 0 0% 0%;
+  --card: 0 0% 98%;
+  --border: 0 0% 90%;
+  --muted: 0 0% 96%;
+  --muted-foreground: 0 0% 45%;
+}
+
+.theme-dark {
+  --background: 0 0% 2%;
+  --foreground: 0 0% 98%;
+  --card: 0 0% 5%;
+  --border: 0 0% 18%;
+  --muted: 0 0% 10%;
+  --muted-foreground: 0 0% 65%;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes pulse-bar {
+  0%, 100% { transform: scaleY(0.3); }
+  50% { transform: scaleY(1); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.7s ease-out both;
+}
+
+.animate-fade-in-delay-1 {
+  animation: fade-in 0.7s 0.1s ease-out both;
+}
+
+.animate-fade-in-delay-2 {
+  animation: fade-in 0.7s 0.2s ease-out both;
+}
+
+.animate-fade-in-delay-3 {
+  animation: fade-in 0.7s 0.3s ease-out both;
+}
+
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+}

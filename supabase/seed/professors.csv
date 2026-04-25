@@ -1,0 +1,4 @@
+full_name,title,email,office_room,department,building,map_image_url,booking_url
+Dr. Evelyn Thomas,Chair & Professor,thomase@uapb.edu,Room 301,Computer Science,Hazzard Hall,/maps/hazzard-hall-level-3.svg,https://example.com/dr-thomas-office-hours
+Prof. Marcus Reed,Associate Professor,reedm@uapb.edu,Room 204,Computer Science,Hazzard Hall,/maps/hazzard-hall-level-2.svg,
+Dr. Alicia Benton,Assistant Professor,bentona@uapb.edu,Room 112,Computer Science,Corbin Hall,/maps/corbin-hall-level-1.svg,

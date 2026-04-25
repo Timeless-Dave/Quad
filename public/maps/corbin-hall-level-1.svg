@@ -1,0 +1,9 @@
+<svg width="720" height="420" viewBox="0 0 720 420" xmlns="http://www.w3.org/2000/svg">
+  <rect width="720" height="420" fill="#0a0a0a"/>
+  <rect x="80" y="80" width="560" height="260" rx="16" fill="#161616" stroke="#3f3f46" stroke-width="2"/>
+  <text x="105" y="70" fill="#d4d4d8" font-size="16">Corbin Hall - Level 1</text>
+  <circle cx="250" cy="250" r="9" fill="#ffffff"/>
+  <text x="266" y="255" fill="#fafafa" font-size="14">Room 112</text>
+  <path d="M180 130 C210 150, 220 200, 245 243" stroke="#f4f4f5" stroke-width="3" fill="none"/>
+  <text x="125" y="130" fill="#d4d4d8" font-size="12">Main Entrance</text>
+</svg>

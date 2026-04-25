@@ -1,0 +1,10 @@
+<svg width="720" height="420" viewBox="0 0 720 420" xmlns="http://www.w3.org/2000/svg">
+  <rect width="720" height="420" fill="#0a0a0a"/>
+  <rect x="80" y="80" width="560" height="260" rx="16" fill="#161616" stroke="#3f3f46" stroke-width="2"/>
+  <path d="M130 210 H590" stroke="#a1a1aa" stroke-width="2" stroke-dasharray="6 6"/>
+  <text x="105" y="70" fill="#d4d4d8" font-size="16">Hazzard Hall - Level 2</text>
+  <circle cx="460" cy="170" r="9" fill="#ffffff"/>
+  <text x="475" y="175" fill="#fafafa" font-size="14">Room 204</text>
+  <path d="M180 250 C250 250, 320 210, 450 175" stroke="#f4f4f5" stroke-width="3" fill="none"/>
+  <text x="125" y="260" fill="#d4d4d8" font-size="12">Elevator/Stairs</text>
+</svg>
