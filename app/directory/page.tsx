@@ -4,6 +4,8 @@ import { getProfessorsByUserEmail } from "@/lib/data/professors";
 import { getSchoolForUser } from "@/lib/data/schools";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
+export const dynamic = "force-dynamic";
+
 export default async function DirectoryPage() {
   const supabase = await createServerSupabaseClient();
   const { data: { user } } = await supabase!.auth.getUser();

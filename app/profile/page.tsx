@@ -3,6 +3,8 @@ import { Navbar } from "@/components/refar/navbar";
 import { ProfileForm } from "@/components/quad/profile-form";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
+export const dynamic = "force-dynamic";
+
 type ActionState = { error?: string; success?: boolean } | null;
 
 async function updateProfile(_: ActionState, formData: FormData): Promise<ActionState> {
