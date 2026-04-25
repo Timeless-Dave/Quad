@@ -4,6 +4,8 @@ import { NextResponse } from "next/server";
 import { isEduEmail, extractDomain } from "@/lib/auth/domain";
 import { lookupSchool } from "@/lib/data/supported-schools";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");

@@ -1,4 +1,4 @@
-import { streamText, tool } from "ai";
+import { streamText, tool, type CoreMessage } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -48,7 +48,13 @@ export async function POST(req: Request) {
   // Captured in closure — used by the tool below
   const schoolId = profile?.school_id ?? null;
 
-  const { messages } = await req.json();
+  let messages: CoreMessage[];
+  try {
+    const body = await req.json();
+    messages = Array.isArray(body.messages) ? (body.messages as CoreMessage[]) : [];
+  } catch {
+    return new Response("Invalid request body.", { status: 400 });
+  }
 
   const result = streamText({
     model: openai("gpt-4o-mini"),

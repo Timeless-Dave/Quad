@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { Navbar } from "@/components/refar/navbar";
 import { DirectoryClient } from "@/components/refar/directory-client";
 import { getProfessorsByUserEmail } from "@/lib/data/professors";
@@ -8,8 +9,11 @@ export const dynamic = "force-dynamic";
 
 export default async function DirectoryPage() {
   const supabase = await createServerSupabaseClient();
-  const { data: { user } } = await supabase!.auth.getUser();
-  const email = user?.email ?? "";
+  if (!supabase) redirect("/sign-in");
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/sign-in");
+  const email = user.email ?? "";
 
   const [professors, school] = await Promise.all([
     getProfessorsByUserEmail(email),
