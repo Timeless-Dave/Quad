@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { isEduEmail, extractDomain } from "@/lib/auth/domain";
-import { lookupSchool } from "@/lib/data/supported-schools";
+import { lookupActiveSchool } from "@/lib/data/supported-schools";
 
 const PROTECTED_PATHS = ["/directory", "/draft", "/assistant", "/profile"];
 
@@ -45,9 +45,9 @@ export async function middleware(request: NextRequest) {
   }
 
   const domain = extractDomain(user.email);
-  const school = lookupSchool(domain);
+  const school = await lookupActiveSchool(supabase, domain);
 
-  if (!school || school.status !== "active") {
+  if (!school) {
     return NextResponse.redirect(new URL("/coming-soon", request.url));
   }
 

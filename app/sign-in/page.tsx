@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
-import { Navbar } from "@/components/refar/navbar";
+import { Navbar } from "@/components/campus/navbar";
 import { createClient } from "@/lib/supabase/client";
 
 const ERROR_MESSAGES: Record<string, string> = {
@@ -13,6 +13,8 @@ const ERROR_MESSAGES: Record<string, string> = {
   no_code: "Invalid link. Please try again.",
   config: "App not configured. Contact support.",
 };
+
+const JUDGE_MODE_ENABLED = process.env.NEXT_PUBLIC_JUDGE_MODE === "true";
 
 function SignInContent() {
   const searchParams = useSearchParams();
@@ -24,7 +26,7 @@ function SignInContent() {
   const [otpStatus, setOtpStatus] = useState<"idle" | "loading" | "sent">("idle");
   const [otpError, setOtpError] = useState<string | null>(null);
 
-  // ── Judge bypass state ─────────────────────────────────────────────────────
+  // ── Judge bypass state (only active when NEXT_PUBLIC_JUDGE_MODE=true) ──────
   const [judgeMode, setJudgeMode] = useState(false);
   const [judgeEmail, setJudgeEmail] = useState("");
   const [judgePassword, setJudgePassword] = useState("");
@@ -117,7 +119,7 @@ function SignInContent() {
               </button>
             </div>
 
-          ) : judgeMode ? (
+          ) : JUDGE_MODE_ENABLED && judgeMode ? (
             /* ── Judge bypass form ── */
             <>
               <div className="space-y-1">
@@ -252,15 +254,17 @@ function SignInContent() {
                 Only .edu accounts are accepted.
               </p>
 
-              {/* Judge bypass — subtle, at the very bottom */}
-              <div className="border-t border-zinc-900 pt-4 text-center">
-                <button
-                  onClick={() => setJudgeMode(true)}
-                  className="text-[11px] text-zinc-400 underline underline-offset-4 transition-colors duration-200 hover:text-white cursor-pointer"
-                >
-                  Hackathon Judge? Click here.
-                </button>
-              </div>
+              {/* Judge bypass — only rendered when NEXT_PUBLIC_JUDGE_MODE=true */}
+              {JUDGE_MODE_ENABLED && (
+                <div className="border-t border-zinc-900 pt-4 text-center">
+                  <button
+                    onClick={() => setJudgeMode(true)}
+                    className="text-[11px] text-zinc-400 underline underline-offset-4 transition-colors duration-200 hover:text-white cursor-pointer"
+                  >
+                    Hackathon Judge? Click here.
+                  </button>
+                </div>
+              )}
             </>
           )}
         </div>

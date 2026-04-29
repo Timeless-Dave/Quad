@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { Navbar } from "@/components/refar/navbar";
+import { Navbar } from "@/components/campus/navbar";
 import { ProfileForm } from "@/components/quad/profile-form";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 

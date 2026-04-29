@@ -1,4 +1,4 @@
-import { Navbar } from "@/components/refar/navbar";
+import { Navbar } from "@/components/campus/navbar";
 import { ChatClient } from "@/components/quad/chat-client";
 
 export const dynamic = "force-dynamic";

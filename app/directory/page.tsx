@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
-import { Navbar } from "@/components/refar/navbar";
-import { DirectoryClient } from "@/components/refar/directory-client";
+import { Navbar } from "@/components/campus/navbar";
+import { DirectoryClient } from "@/components/campus/directory-client";
 import { getProfessorsByUserEmail } from "@/lib/data/professors";
 import { getSchoolForUser } from "@/lib/data/schools";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
