@@ -93,7 +93,9 @@ export async function POST(req: Request) {
       `Resume context: ${resumeText}. ` +
       `Be concise and helpful. ` +
       `When the user asks about faculty, professors, or staff, use the searchDirectory tool. ` +
-      `When the user asks for directions, navigation, or how to get somewhere on campus, use the startNavigation tool and generate realistic step-by-step walking directions.`,
+      `When the user asks for directions, navigation, or how to get somewhere on campus, use the startNavigation tool and generate realistic step-by-step walking directions. ` +
+      `You also have access to upcoming campus events via the getEvents tool. ` +
+      `When relevant, proactively mention events that might interest the student based on their major or what they are asking about. For example, if they ask about internships, mention any upcoming career fairs. If they ask about mental health, mention wellness events.`,
     messages,
     maxSteps: 5,
     onFinish: async ({ text }) => {
@@ -208,6 +210,61 @@ export async function POST(req: Request) {
         }),
         execute: async ({ destination, steps }) => {
           return { success: true, destination, steps };
+        },
+      }),
+      getEvents: tool({
+        description:
+          "Gets upcoming campus events. Use when the student asks what is happening on campus, about events, activities, career fairs, workshops, or anything event-related.",
+        parameters: z.object({
+          category: z.string().optional().describe("Filter by category (e.g. Career, Academic, Wellness)."),
+          limit: z.number().optional().default(5).describe("Max results to return."),
+        }),
+        execute: async ({ category, limit }) => {
+          if (!schoolId) {
+            return "Unable to fetch events: your school could not be determined.";
+          }
+
+          const now = new Date().toISOString();
+          let query = supabase
+            .from("events")
+            .select("title, category, location, starts_at, ends_at, description")
+            .eq("school_id", schoolId)
+            .gte("starts_at", now)
+            .order("starts_at", { ascending: true })
+            .limit(limit ?? 5);
+
+          if (category) {
+            query = query.ilike("category", `%${category}%`);
+          }
+
+          const { data: rows, error } = await query;
+
+          if (error) {
+            console.error("getEvents error:", error.message);
+            return "A database error occurred while fetching events.";
+          }
+
+          if (!rows || rows.length === 0) {
+            return "No upcoming events found on campus.";
+          }
+
+          const lines = rows.map((e, i) => {
+            const date = new Date(e.starts_at).toLocaleDateString("en-US", {
+              weekday: "short",
+              month: "short",
+              day: "numeric",
+              hour: "numeric",
+              minute: "2-digit",
+            });
+            return (
+              `${i + 1}. ${e.title} [${e.category ?? "General"}]\n` +
+              `   Date: ${date}\n` +
+              `   Location: ${e.location ?? "TBD"}\n` +
+              `   ${e.description ?? ""}`
+            );
+          });
+
+          return `Upcoming campus events:\n\n${lines.join("\n\n")}`;
         },
       }),
     },

@@ -11,6 +11,9 @@ export function Navbar() {
           <Link href="/directory" className="transition hover:text-white">
             Directory
           </Link>
+          <Link href="/events" className="transition hover:text-white">
+            Events
+          </Link>
           <Link href="/assistant" className="transition hover:text-white">
             Assistant
           </Link>
