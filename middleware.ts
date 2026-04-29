@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { isEduEmail, extractDomain } from "@/lib/auth/domain";
 import { lookupActiveSchool } from "@/lib/data/supported-schools";
 
-const PROTECTED_PATHS = ["/directory", "/draft", "/assistant", "/profile"];
+const PROTECTED_PATHS = ["/directory", "/draft", "/assistant", "/profile", "/events"];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -56,5 +56,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/directory/:path*", "/draft/:path*", "/assistant/:path*", "/profile/:path*"],
+  matcher: ["/directory/:path*", "/draft/:path*", "/assistant/:path*", "/profile/:path*", "/events/:path*"],
 };
