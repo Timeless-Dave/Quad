@@ -1,7 +1,7 @@
 import { streamText, tool, type CoreMessage } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createServerSupabaseClient, createServiceRoleClient } from "@/lib/supabase/server";
 
 export async function POST(req: Request) {
   if (!process.env.OPENAI_API_KEY) {
@@ -45,15 +45,44 @@ export async function POST(req: Request) {
   const major = profile?.major ?? "undeclared";
   const gpa = profile?.gpa != null ? String(profile.gpa) : "not provided";
   const resumeText = profile?.resume_text ?? "No resume context provided yet.";
-  // Captured in closure — used by the tool below
   const schoolId = profile?.school_id ?? null;
 
   let messages: CoreMessage[];
+  let conversationId: string | null = null;
   try {
     const body = await req.json();
     messages = Array.isArray(body.messages) ? (body.messages as CoreMessage[]) : [];
+    conversationId = typeof body.conversationId === "string" ? body.conversationId : null;
   } catch {
     return new Response("Invalid request body.", { status: 400 });
+  }
+
+  // ── Conversation management ───────────────────────────────────────────────
+  // Create a new conversation row before streaming so we can return its id
+  // in the response headers immediately (onFinish is too late for headers).
+  let activeConversationId: string | null = conversationId;
+  let newConversationId: string | null = null;
+
+  if (!conversationId && schoolId) {
+    const lastUserMsg = [...messages].reverse().find((m) => m.role === "user");
+    const rawText =
+      typeof lastUserMsg?.content === "string"
+        ? lastUserMsg.content
+        : JSON.stringify(lastUserMsg?.content ?? "");
+    const title = rawText.split(/\s+/).slice(0, 6).join(" ") || "New conversation";
+
+    const db = createServiceRoleClient();
+    if (db) {
+      const { data: conv } = await db
+        .from("conversations")
+        .insert({ user_id: user.id, school_id: schoolId, title })
+        .select("id")
+        .single();
+      if (conv?.id) {
+        activeConversationId = conv.id;
+        newConversationId = conv.id;
+      }
+    }
   }
 
   const result = streamText({
@@ -67,6 +96,40 @@ export async function POST(req: Request) {
       `When the user asks for directions, navigation, or how to get somewhere on campus, use the startNavigation tool and generate realistic step-by-step walking directions.`,
     messages,
     maxSteps: 5,
+    onFinish: async ({ text }) => {
+      if (!activeConversationId) return;
+
+      const db = createServiceRoleClient();
+      if (!db) return;
+
+      const lastUserMsg = [...messages].reverse().find((m) => m.role === "user");
+      const userContent =
+        typeof lastUserMsg?.content === "string"
+          ? lastUserMsg.content
+          : JSON.stringify(lastUserMsg?.content ?? "");
+
+      const inserts: { conversation_id: string; role: string; content: string }[] = [];
+
+      if (userContent) {
+        inserts.push({ conversation_id: activeConversationId, role: "user", content: userContent });
+      }
+      if (text) {
+        inserts.push({ conversation_id: activeConversationId, role: "assistant", content: text });
+      }
+
+      if (inserts.length > 0) {
+        const { error } = await db.from("messages").insert(inserts);
+        if (error) console.error("Failed to persist messages:", error.message);
+      }
+
+      // Bump updated_at so the conversation surfaces at the top of the sidebar.
+      if (conversationId) {
+        await db
+          .from("conversations")
+          .update({ updated_at: new Date().toISOString() })
+          .eq("id", conversationId);
+      }
+    },
     tools: {
       searchDirectory: tool({
         description:
@@ -77,12 +140,10 @@ export async function POST(req: Request) {
             .describe("The name, department, or keyword to search for."),
         }),
         execute: async ({ query }) => {
-          // Guard: no school context means we can't scope the query
           if (!schoolId) {
             return "Unable to search the directory: your school could not be determined. Please contact support.";
           }
 
-          // Sanitize: strip SQL wildcard characters from user input
           const safe = query.replace(/[%_]/g, "").trim();
           if (!safe) return "Please provide a name or keyword to search for.";
 
@@ -115,15 +176,12 @@ export async function POST(req: Request) {
             return `No faculty found matching "${safe}". Try a different name or department.`;
           }
 
-          // Supabase returns embedded joins as object | object[] depending on the FK direction.
-          // This helper safely unwraps either shape.
           function nameOf(rel: unknown): string | null {
             if (!rel) return null;
             const obj = Array.isArray(rel) ? rel[0] : rel;
             return (obj as { name?: string })?.name ?? null;
           }
 
-          // Format as readable text so the LLM can cite specifics naturally
           const lines = rows.map((r, i) => {
             const dept = nameOf(r.departments) ?? "Unknown department";
             const bldg = nameOf(r.buildings) ?? "Unknown building";
@@ -155,5 +213,12 @@ export async function POST(req: Request) {
     },
   });
 
-  return result.toDataStreamResponse();
+  const responseHeaders: Record<string, string> = {};
+  if (newConversationId) {
+    responseHeaders["x-conversation-id"] = newConversationId;
+    // Same-origin requests expose all headers; explicit declaration is belt-and-suspenders.
+    responseHeaders["Access-Control-Expose-Headers"] = "x-conversation-id";
+  }
+
+  return result.toDataStreamResponse({ headers: responseHeaders });
 }
